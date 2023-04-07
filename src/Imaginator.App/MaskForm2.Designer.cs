@@ -28,91 +28,100 @@
         /// </summary>
         private void InitializeComponent()
         {
-            groupBox1 = new GroupBox();
-            BtnSave = new Button();
-            BtnReset = new Button();
-            label1 = new Label();
-            numericUpDown1 = new NumericUpDown();
-            pictureBox1 = new PictureBox();
-            groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            SuspendLayout();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.BtnSave = new System.Windows.Forms.Button();
+            this.BtnReset = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.SuspendLayout();
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(BtnSave);
-            groupBox1.Controls.Add(BtnReset);
-            groupBox1.Controls.Add(label1);
-            groupBox1.Controls.Add(numericUpDown1);
-            groupBox1.Location = new Point(12, 9);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(290, 81);
-            groupBox1.TabIndex = 7;
-            groupBox1.TabStop = false;
-            groupBox1.Text = "Edit Mask";
+            this.groupBox1.Controls.Add(this.BtnSave);
+            this.groupBox1.Controls.Add(this.BtnReset);
+            this.groupBox1.Controls.Add(this.label1);
+            this.groupBox1.Controls.Add(this.numericUpDown1);
+            this.groupBox1.Location = new System.Drawing.Point(12, 9);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(290, 81);
+            this.groupBox1.TabIndex = 7;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Edit Mask";
             // 
             // BtnSave
             // 
-            BtnSave.Location = new Point(6, 47);
-            BtnSave.Name = "BtnSave";
-            BtnSave.Size = new Size(164, 23);
-            BtnSave.TabIndex = 1;
-            BtnSave.Text = "&Save and Close";
-            BtnSave.UseVisualStyleBackColor = true;
+            this.BtnSave.Location = new System.Drawing.Point(6, 47);
+            this.BtnSave.Name = "BtnSave";
+            this.BtnSave.Size = new System.Drawing.Size(164, 23);
+            this.BtnSave.TabIndex = 1;
+            this.BtnSave.Text = "&Save and Close";
+            this.BtnSave.UseVisualStyleBackColor = true;
             // 
             // BtnReset
             // 
-            BtnReset.Location = new Point(176, 47);
-            BtnReset.Name = "BtnReset";
-            BtnReset.Size = new Size(75, 23);
-            BtnReset.TabIndex = 4;
-            BtnReset.Text = "&Reset";
-            BtnReset.UseVisualStyleBackColor = true;
+            this.BtnReset.Location = new System.Drawing.Point(176, 47);
+            this.BtnReset.Name = "BtnReset";
+            this.BtnReset.Size = new System.Drawing.Size(75, 23);
+            this.BtnReset.TabIndex = 4;
+            this.BtnReset.Text = "&Reset";
+            this.BtnReset.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(6, 21);
-            label1.Name = "label1";
-            label1.Size = new Size(63, 15);
-            label1.TabIndex = 2;
-            label1.Text = "Brush Size:";
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 21);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(63, 15);
+            this.label1.TabIndex = 2;
+            this.label1.Text = "Brush Size:";
             // 
             // numericUpDown1
             // 
-            numericUpDown1.Location = new Point(75, 19);
-            numericUpDown1.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
-            numericUpDown1.Name = "numericUpDown1";
-            numericUpDown1.Size = new Size(83, 23);
-            numericUpDown1.TabIndex = 3;
-            numericUpDown1.Value = new decimal(new int[] { 10, 0, 0, 0 });
+            this.numericUpDown1.Location = new System.Drawing.Point(75, 19);
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Name = "numericUpDown1";
+            this.numericUpDown1.Size = new System.Drawing.Size(83, 23);
+            this.numericUpDown1.TabIndex = 3;
+            this.numericUpDown1.Value = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             // 
             // pictureBox1
             // 
-            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox1.Location = new Point(12, 96);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(500, 500);
-            pictureBox1.SizeMode = PictureBoxSizeMode.AutoSize;
-            pictureBox1.TabIndex = 6;
-            pictureBox1.TabStop = false;
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pictureBox1.Location = new System.Drawing.Point(12, 96);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(500, 500);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
             // 
             // MaskForm2
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(519, 600);
-            Controls.Add(groupBox1);
-            Controls.Add(pictureBox1);
-            Name = "MaskForm2";
-            Text = "MaskForm2";
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)numericUpDown1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(519, 600);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.pictureBox1);
+            this.Name = "MaskForm2";
+            this.Text = "Mask Form";
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion

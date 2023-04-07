@@ -34,7 +34,7 @@ namespace Imaginator.App {
             blazorWebView1.Services = services.BuildServiceProvider();
             blazorWebView1.RootComponents.Add<App>("#app");
             blazorWebView1.RootComponents.Add<HeadOutlet>("head::after");
-
+            this.FormClosed += (a, b) => { Environment.Exit(0); };
         }
     }
 }
