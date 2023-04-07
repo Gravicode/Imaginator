@@ -1,0 +1,263 @@
+﻿@page "/image-variations"
+@using System.Text.RegularExpressions
+@using System.ComponentModel.DataAnnotations
+@inject ISnackbar Snackbar
+
+
+
+@inject IOpenAIService openAiService
+<h3>Dall-e Create Image Variations</h3>
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form">
+                <MudTextField T="string" Label="Username" @bind-Value="Username" Required="true" RequiredError="please type user name!" />
+                <MudFileUpload T="IBrowserFile" Accept="image/png" FilesChanged="UploadFiles">
+                    <ButtonTemplate>
+                        <MudFab HtmlTag="label" Size="Size.Small"
+                                Color="Color.Secondary"
+                                Icon="@Icons.Material.Filled.Image"
+                                Label="Select picture"
+                                for="@context" />
+                    </ButtonTemplate>
+                </MudFileUpload>
+                <MudTextField T="int" Label="Number of Images" @bind-Value="NumImages" Required="true" RequiredError="please define number of images!" />
+                <MudSelect T="string" @bind-Value="ImageSize" Label="Image Size" AnchorOrigin="Origin.BottomCenter">
+                    <MudSelectItem Value="@(StaticValues.ImageStatics.Size.Size256)">256</MudSelectItem>
+                    <MudSelectItem Value="@(StaticValues.ImageStatics.Size.Size512)">512</MudSelectItem>
+                    <MudSelectItem Value="@(StaticValues.ImageStatics.Size.Size1024)">1024</MudSelectItem>
+                </MudSelect>
+            </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Filled" Disabled="@IsLoading" Color="Color.Primary" DisableElevation="true" OnClick="@(()=>Submit())">Submit</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" DisableElevation="true" OnClick="@(()=>Reset())" Class="mx-2">Reset</MudButton>
+
+        </MudPaper>
+        @if (IsLoading) {
+            <MudPaper Class="pa-4 mt-4">
+
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+
+            </MudPaper>
+        }
+    </MudItem>
+
+    <MudItem xs="12" sm="5">
+        <MudPaper Class="pa-4 mud-height-full">
+            <MudText Typo="Typo.subtitle2">@($"Results ({results.Count})")</MudText>
+                @if (!string.IsNullOrEmpty(ErrorMsg)) {
+                <MudText Typo="Typo.subtitle2">@($"Error: {ErrorMsg}")</MudText>
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="12">
+        <MudTable Items="@results" Dense="@dense" Hover="@hover" Bordered="@bordered" Striped="@striped" Filter="new Func<ImageModel,bool>(FilterFunc1)" @bind-SelectedItem="selectedItem1">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Generated Images</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Title</MudTh>
+                <MudTh>Desc</MudTh>
+                <MudTh>Image</MudTh>
+                <MudTh>Actions</MudTh>
+
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Title">@context.Title</MudTd>
+                <MudTd DataLabel="Desc">@context.Desc</MudTd>
+                <MudTd DataLabel="Image">
+                    <MudImage Fluid="true" Src="@context.Url" Alt="@context.Title"></MudImage>
+                </MudTd>
+                <MudTd DataLabel="Actions">
+                    <MudButton Variant="Variant.Outlined" @onclick="()=>Download(context.Url)" Color="Color.Primary">Download</MudButton>
+                </MudTd>
+
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+
+        <div class="d-flex flex-wrap mt-4">
+            <MudSwitch @bind-Checked="@hover" Color="Color.Primary">Hover</MudSwitch>
+            <MudSwitch @bind-Checked="@dense" Color="Color.Secondary">Dense</MudSwitch>
+            <MudSwitch @bind-Checked="@striped" Color="Color.Tertiary">Striped</MudSwitch>
+            <MudSwitch @bind-Checked="@bordered" Color="Color.Warning">Bordered</MudSwitch>
+            <MudSpacer />
+            <div style="min-width:200px;">
+                <MudText Inline="true" Class="align-self-center">Selected1: @selectedItem1?.Title</MudText>
+            </div>
+        </div>
+
+    </MudItem>
+</MudGrid>
+@code {
+    bool IsLoading = false;
+    string ErrorMsg = string.Empty;
+    string Username = "TestUser";
+    string ImageSize = StaticValues.ImageStatics.Size.Size256;
+    int NumImages = 2;
+
+    bool success;
+    List<ImageModel> results = new();
+    int MaxToken = 50;
+    MudForm form;
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = false;
+    private bool bordered = false;
+    private string searchString1 = "";
+    private ImageModel selectedItem1 = null;
+    private HashSet<ImageModel> selectedItems = new HashSet<ImageModel>();
+    HttpClient client = new();
+    ImageFile SelectedFile;
+    IList<IBrowserFile> files = new List<IBrowserFile>();
+    private async Task UploadFiles(IBrowserFile file) {
+
+        if (file != null) {
+            var ms = new MemoryStream();
+            await file.OpenReadStream(AppConstants.MaxAllowedFileSize).CopyToAsync(ms);
+            SelectedFile = new ImageFile();
+            SelectedFile.FileName = file.Name;
+            SelectedFile.Ext = Path.GetExtension(file.Name);
+            SelectedFile.Content = CropImage(ms.ToArray());
+        }
+    }
+
+    byte[] CropImage(byte[] Data) {
+        Bitmap sourceImg;
+        using (var ms = new MemoryStream(Data)) {
+            sourceImg = new Bitmap(ms);
+        }
+        if (sourceImg.Width == sourceImg.Height) {
+            return Data;
+        }
+        var width = Math.Min(sourceImg.Width, sourceImg.Height);
+        var newImg = new Bitmap(width,width);
+        using (var newGraphic = System.Drawing.Graphics.FromImage(newImg))
+        {
+            newGraphic.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
+            newGraphic.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+            newGraphic.Clear(System.Drawing.Color.Transparent);
+            newGraphic.DrawImage(sourceImg, 0, 0, width, width);
+            newGraphic.Flush();
+        }
+        var mem = new MemoryStream();
+        newImg.Save(mem, System.Drawing.Imaging.ImageFormat.Png);
+        return mem.ToArray();
+    }
+
+    async Task Download(string Url) {
+        try {
+            // Displays a SaveFileDialog so the user can save the Image
+            // assigned to Button2.
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+            saveFileDialog1.Filter = "Jpeg Image|*.jpg|Bitmap Image|*.bmp|Gif Image|*.gif";
+            saveFileDialog1.Title = "Save an Image File";
+            saveFileDialog1.ShowDialog();
+
+            // If the file name is not an empty string open it for saving.
+            if (saveFileDialog1.FileName != "") {
+                // Saves the Image via a FileStream created by the OpenFile method.
+                System.IO.FileStream fs =
+                    (System.IO.FileStream)saveFileDialog1.OpenFile();
+                // Saves the Image in the appropriate ImageFormat based upon the
+                // File type selected in the dialog box.
+                // NOTE that the FilterIndex property is one-based.
+                var bytes = await client.GetByteArrayAsync(Url);
+                Bitmap bmp;
+                using (var ms = new MemoryStream(bytes)) {
+                    bmp = new Bitmap(ms);
+                }
+                switch (saveFileDialog1.FilterIndex) {
+                    case 1:
+                        bmp.Save(fs,
+                          System.Drawing.Imaging.ImageFormat.Jpeg);
+                        break;
+
+                    case 2:
+                        bmp.Save(fs,
+                          System.Drawing.Imaging.ImageFormat.Bmp);
+                        break;
+
+                    case 3:
+                        bmp.Save(fs,
+                          System.Drawing.Imaging.ImageFormat.Gif);
+                        break;
+                }
+
+                fs.Close();
+            }
+        }
+        catch (Exception ex) {
+
+            Console.WriteLine(ex);
+            Snackbar.Add($"failed to save: {ex}", Severity.Error);
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync() {
+
+    }
+
+    private bool FilterFunc1(ImageModel element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(ImageModel element, string searchString) {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        //if (element.Desc.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        //    return true;
+
+        return false;
+    }
+    async Task Reset() {
+        form.Reset();
+        results.Clear();
+    }
+    async Task Submit() {
+        IsLoading = true;
+        try {
+            ErrorMsg = string.Empty;
+            if(SelectedFile==null || SelectedFile.Content == null) {
+                Snackbar.Add($"please select image first", Severity.Info);
+                return;
+            }
+            var imageResult = await openAiService.Image.CreateImageVariation(new  ImageVariationCreateRequest {
+                    Image = SelectedFile.Content,
+                    ImageName = SelectedFile.FileName,
+                    N = NumImages,
+                    Size = ImageSize,
+                    ResponseFormat = StaticValues.ImageStatics.ResponseFormat.Url,
+                    User = Username
+                });
+
+
+            if (imageResult.Successful) {
+
+                Console.WriteLine(string.Join("\n", imageResult.Results.Select(r => r.Url)));
+                var count = 1;
+                results.AddRange(imageResult.Results.Select(x => new ImageModel() { Url = x.Url, Title = $"Image-{count++}" }));
+            }
+            else {
+                var res = imageResult.Error.Message;
+                Console.WriteLine(res);
+                ErrorMsg = res;
+                //results.Add(res);
+            }
+        }
+        catch (Exception ex) {
+            Console.WriteLine(ex);
+            Snackbar.Add($"failed to generate variations: {ex}", Severity.Error);
+        }
+
+        IsLoading = false;
+    }
+
+
+}
